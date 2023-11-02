@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Socket Client using TCP | Prakash</title>
+</head>
+<body>
+    <output id="messages"></output>
+    <script>
+        const messages = document.getElementById("messages")
+        const socket = new WebSocket('ws://localhost:8000') // websocket is an api on the browser
+        socket.onopen = (event) => {console.log("Web socket is connected!")}
+        socket.onclose = (event) => {console.log("Disconnected from the web socket server!")}
+        socket.onerror = (error) => {console.error(`Web socket error:`, error)}
+        socket.onmessage = (msg) => console.log(`I got a message`, msg)
+    </script>
+</body>
+</html>
