@@ -7,7 +7,8 @@ const WEBSOCKET_MAGIC_STRING_KEY = '258EAFA5-E914-47DA-95CA-C5AB0DC85B11'
 const server = net.createServer(socket => {
     console.log("Client connected!")
     socket.on('data', (data) => {
-      if(giveValue(data, 2) == 'Upgrade'){
+      console.log(data.toString())
+      if(giveValue(data, 'Connection: ') == 'Upgrade'){
         onSocketUpgrade(data, socket);
       }
       else{
@@ -16,14 +17,20 @@ const server = net.createServer(socket => {
     });
 })
 
-function giveValue(data, keyLine){
-  const arr = ((data.toString()).split("\r\n"))[keyLine]
-  const value = (arr.split(":"))[1]
-  return value.trim()
+function giveValue(data, keyWord) {
+  const connectionIndex = (data.toString()).indexOf(keyWord);
+if (connectionIndex !== -1) {
+  const substringAfterConnection = (data.toString()).substring(connectionIndex + keyWord.length);
+  const endOfLineIndex = substringAfterConnection.indexOf('\r');
+  const connectionValue = endOfLineIndex !== -1 ? substringAfterConnection.substring(0, endOfLineIndex).trim() : '';
+  return connectionValue
+} else {
+  console.log('Connection header not found');
+}
 }
 
 function onSocketUpgrade(data, socket) {
-      const webClientSocketKey  = giveValue(data, 11)
+      const webClientSocketKey  = giveValue(data, 'Sec-WebSocket-Key: ')
       console.log(`${webClientSocketKey} connected!`)
       const head = prepareHandShakeHeaders(webClientSocketKey)
   socket.write(head)
