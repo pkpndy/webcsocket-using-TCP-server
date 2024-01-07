@@ -1,14 +1,8 @@
 const net = require("net");
 const crypto = require('crypto')
 
-const SEVEN_BITS_INTEGER_MARKER=125
-const SIXTEEN_BITS_INTEGER_MARKER=126
-const SIXTYFOUR_BITS_INTEGER_MARKER=127
-const MASKKEY_LENGTH = 4
-
-const FIRST_BIT = 128
-
 const WEBSOCKET_MAGIC_STRING_KEY = '258EAFA5-E914-47DA-95CA-C5AB0DC85B11'
+
 
 const server = net.createServer(socket => {
     console.log("Client connected!")
@@ -40,28 +34,6 @@ function onSocketUpgrade(data, socket) {
       console.log(`${webClientSocketKey} connected!`)
       const head = prepareHandShakeHeaders(webClientSocketKey)
   socket.write(head)
-  socket.on('readable', () => onSocketReadable(socket))
-}
-
-function unmask(encodedBuffer, maskKey) {
-  const finalBuffer = Buffer.from(encodedBuffer)
-  const decoded = Uint8Array.from(finalBuffer, (elt, i) => elt ^ maskKey[i % 4])
-  return decoded
-}
-
-function onSocketReadable(socket) {
-  socket.read(1) //consume the first byte
-  const [maskKeyAndPayloadLength] = socket.read(1)
-  const payloadLength = maskKeyAndPayloadLength - FIRST_BIT
-  if(payloadLength<=SEVEN_BITS_INTEGER_MARKER){
-    const maskKey = socket.read(MASKKEY_LENGTH)
-    const encodedData = socket.read(payloadLength)
-    const DECODED = unmask(encodedData,maskKey)
-    console.log(DECODED.toString())
-  }
-  else{
-    throw new Error("message longer than 125 bit payload length");
-  }
 }
 
 function prepareHandShakeHeaders(id) {
